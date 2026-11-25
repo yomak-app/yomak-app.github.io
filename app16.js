@@ -1,6 +1,6 @@
 // Sign in with Pi Network. Inside Pi Browser: Pi.authenticate. In a normal browser: Pi Sign-in (OAuth) once PI_CLIENT_ID is set.
 (function(){
-  var PI_CLIENT_ID=""; // public OAuth client id from the Pi Developer Portal (Pi Sign-in section). Empty = only Pi Browser route.
+  var PI_CLIENT_ID="rHU8OBzAds4prB0d7YNJL-HWUIHzTKO1fenUQC9kBK8"; // public OAuth client id from the Pi Developer Portal (Pi Sign-in section). Empty = only Pi Browser route.
   var PI_SANDBOX=false;
   var inPi=function(){return /PiBrowser/i.test(navigator.userAgent||"")};
   function loadSdk(){return new Promise(function(ok,no){
