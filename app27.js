@@ -45,7 +45,7 @@ window.msgHtml=function(){
 };
 function gmSheet(id){
   const m=gmFind(id);if(!m)return;const me=dmMeUid(),mine=m.user_id===me,mod=typeof canMod==="function"&&canMod(curGroupObj());
-  openModal('<button class="close" aria-label="إغلاق" onclick="closeModal()">×</button><div class="chips" style="font-size:26px">'+DMRX.map(x=>'<button class="chip" onclick="gmReact(\''+id+'\',\''+x+'\')">'+x+'</button>').join("")+'</div><div class="list">'+
+  openModal('<button class="close" aria-label="إغلاق" onclick="closeModal()">×</button><div class="chips" style="font-size:26px">'+DMRX.map(x=>'<button class="chip" title="'+DMRXL[x]+'" onclick="gmReact(\''+id+'\',\''+x+'\')">'+x+'<small style="display:block;font-size:9px">'+DMRXL[x]+'</small></button>').join("")+'</div><div class="list">'+
    '<button class="secondary" onclick="gmReply(\''+id+'\')">↩️ رد</button>'+(m.kind==="text"||!m.kind?'<button class="secondary" onclick="closeModal();copyText(gmFind(\''+id+'\').body)">📋 نسخ</button>':"")+
    '<button class="secondary" onclick="gmWho(\''+id+'\')">من تفاعل؟</button>'+(!mine?'<button class="secondary" onclick="closeModal();reportItem(\'message\',\''+id+'\')">🚩 إبلاغ</button>':"")+(mine||mod?'<button class="secondary" style="color:#b0352d" onclick="closeModal();delMsg(\''+id+'\')">🗑 حذف</button>':"")+'</div>');
 }

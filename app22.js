@@ -1,5 +1,5 @@
 /* Phase 4B: Messenger-style DM: reactions, replies, seen, typing, voice notes, images, unsend. */
-const DMRX=["👍","❤️","😂","😮","😢","😡"];
+const DMRX=["👍","❤️","🥰","😂","😮","😢","😡"],DMRXL={"👍":"أعجبني","❤️":"أحببته","🥰":"أدعمه","😂":"أضحكني","😮":"واااو","😢":"أحزنني","😡":"أغضبني"};
 cl.dmRx=cl.dmRx||{};cl.dmSeen=0;let dmReplyTo=null,dmTypingTimer=null,dmTypeCh=null,dmTypeKey="",dmTick=null,dmSig="",dmRec=null,dmLastType=0,dmMarked=0;
 const dmNum=x=>Number(x)||0;
 function dmMeUid(){return(cs()||{}).uid}
@@ -67,7 +67,7 @@ function dmReplyBar(){const b=el("dmReply");if(!b)return;if(!dmReplyTo){b.classN
 /* message actions sheet */
 function dmSheet(id){
   const m=dmFind(id);if(!m)return;const me=dmMeUid(),mine=m.user_id===me,mid=esc(m.id+""),my=(cl.dmRx[m.id]||{})[me];
-  openModal('<button class="close" aria-label="إغلاق" onclick="closeModal()">×</button><div class="dmsheet"><div class="dmrxrow">'+DMRX.map(e=>'<button type="button" class="'+(my===e?"on":"")+'" onclick="dmReact(\''+mid+'\',\''+e+'\')">'+e+'</button>').join("")+'</div>'+
+  openModal('<button class="close" aria-label="إغلاق" onclick="closeModal()">×</button><div class="dmsheet"><div class="dmrxrow">'+DMRX.map(e=>'<button type="button" title="'+DMRXL[e]+'" class="'+(my===e?"on":"")+'" onclick="dmReact(\''+mid+'\',\''+e+'\')">'+e+'<small style="display:block;font-size:9px">'+DMRXL[e]+'</small></button>').join("")+'</div>'+
     '<button class="chip" onclick="dmDoReply(\''+mid+'\')">↩️ رد</button>'+
     (m.kind==="text"?'<button class="chip" onclick="dmCopy(\''+mid+'\')">📋 نسخ</button>':"")+
     (mine&&m.kind==="text"?'<button class="chip" onclick="closeModal();editItem(\'dm\',\''+mid+'\')">✏️ تعديل</button>':"")+
