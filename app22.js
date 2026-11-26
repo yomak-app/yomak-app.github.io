@@ -38,7 +38,7 @@ async function dmMarkRead(chat){
   const inc=(cl.dmMsgs||[]).filter(m=>m.user_id!==me);if(!inc.length)return;
   const last=dmNum(inc[inc.length-1].id);if(last<=dmMarked)return;
   dmMarked=last;
-  try{await sb("/rest/v1/dm_reads?on_conflict=chat_id,user_id",{method:"POST",prefer:"resolution=merge-duplicates,return=minimal",body:{chat_id:chat,last_read_id:last,updated_at:new Date().toISOString()}})}catch(e){dmMarked=0}
+  try{await sb("/rest/v1/dm_reads?on_conflict=chat_id,user_id",{method:"POST",prefer:"resolution=merge-duplicates,return=minimal",body:{chat_id:chat,last_read_id:last,updated_at:new Date().toISOString()}});delete cl.unread["d:"+chat]}catch(e){dmMarked=0}
 }
 async function loadDmMsgs(e,t,s){
   const a=cl.dmMsgs||[],n=s&&a.length?a[0].id:null;
