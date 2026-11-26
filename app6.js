@@ -17,6 +17,7 @@ async function send(kind,payload){
   await sb("/rest/v1/call_signals",{method:"POST",body:{call_id:call.id,to_uid:call.peer,kind,payload:payload||null}});
 }
 function cleanup(notify){
+  stopTone();keepAwake(false);
   if(call&&notify){try{send("hangup")}catch(e){}}
   if(call){clearTimeout(call.t);clearTimeout(call.dc);clearInterval(call.wd);clearInterval(call.tick);try{call.pc&&call.pc.close()}catch(e){}try{call.stream&&call.stream.getTracks().forEach(t=>t.stop())}catch(e){}}
   call=null;uiClose();
@@ -43,6 +44,27 @@ async function mkPc(){await loadTurn();
   call.stream.getTracks().forEach(t=>pc.addTrack(t,call.stream));
   return pc;
 }
+// ---- tones (WebAudio, no files): ringtone for the callee, ringback for the caller ----
+let AC=null,toneT=null,wl=null;
+function tone(kind){
+  stopTone();
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume()}catch(e){return}
+  const beep=(f,dur)=>{try{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;o.type="sine";g.gain.value=.0001;o.connect(g);g.connect(AC.destination);const t=AC.currentTime;g.gain.exponentialRampToValueAtTime(.25,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.start(t);o.stop(t+dur+.05)}catch(e){}};
+  const ring=()=>{if(kind==="in"){beep(880,.35);setTimeout(()=>beep(660,.35),400);try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}}else{beep(440,.9)}};
+  ring();toneT=setInterval(ring,kind==="in"?2200:3000);
+}
+function stopTone(){clearInterval(toneT);toneT=null}
+async function keepAwake(on){try{if(on&&navigator.wakeLock){wl=await navigator.wakeLock.request("screen")}else if(wl){await wl.release();wl=null}}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&call&&call.on)keepAwake(true)});
+// mic/headset changed during a call (plug/unplug, bluetooth): grab the new default mic and swap the track
+let devT=null;
+if(navigator.mediaDevices&&navigator.mediaDevices.addEventListener)navigator.mediaDevices.addEventListener("devicechange",()=>{
+  clearTimeout(devT);devT=setTimeout(async()=>{
+    if(!call||!call.pc||!call.stream)return;
+    try{const ns=await navigator.mediaDevices.getUserMedia({audio:MIC,video:false});const nt=ns.getAudioTracks()[0];const snd=call.pc.getSenders().find(x=>x.track&&x.track.kind==="audio");
+      if(snd&&nt){nt.enabled=!call.muted;await snd.replaceTrack(nt);call.stream.getTracks().forEach(t=>t.stop());call.stream=ns}}catch(e){}
+  },700);
+});
 function setBadge(t){const b=document.getElementById("callBadge");if(b)b.textContent=t||""}
 // caller restarts ICE (new offer with iceRestart); callee only waits. Gives up after ~35 s.
 async function reconnect(why){
@@ -64,12 +86,15 @@ function watch(){
     if(!call||!call.pc||!call.on)return;
     try{const r=await call.pc.getStats();let b=0;r.forEach(x=>{if(x.type==="inbound-rtp"&&x.kind==="audio")b+=x.bytesReceived||0});
       if(b===last)still++;else{still=0;last=b}
+      let rtt=0,lost=0,rec=0;r.forEach(x=>{if(x.type==='candidate-pair'&&x.nominated&&x.currentRoundTripTime)rtt=x.currentRoundTripTime*1000;if(x.type==='inbound-rtp'&&x.kind==='audio'){lost+=x.packetsLost||0;rec+=x.packetsReceived||0}});
+      const lp=(call.pl!==undefined&&rec>call.pr)?(lost-call.pl)/Math.max(1,(rec-call.pr)+(lost-call.pl)):0;call.pl=lost;call.pr=rec;
+      if(!call.retry)setBadge(rtt>600||lp>.1?'📶 الاتصال ضعيف':'')
       if(still>=3&&!call.muted2){still=0;reconnect("stall")}}catch(e){}
   },3000);
 }
 window.addEventListener("online",()=>{if(call&&call.on)reconnect("online")});
 function connected(){
-  if(!call||call.on)return;call.on=true;clearTimeout(call.t);call.t0=Date.now();watch();
+  if(!call||call.on)return;call.on=true;stopTone();keepAwake(true);clearTimeout(call.t);call.t0=Date.now();watch();
   const draw=()=>{const s=Math.floor((Date.now()-call.t0)/1000);ui(`<div style="font-size:42px">🎙️</div><h2>${esc(nameOf(call.peer))}</h2><div id="callBadge" style="min-height:20px;font-size:13px;color:#ffd9a0"></div><div id="callT" style="font-size:22px">${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}</div><div style="display:flex;gap:12px">${btn(call.muted?"🔇 تشغيل":"🎙️ كتم","callMute()","#3b6b62")}${btn("⛔ إنهاء","callEnd()","#b0352d")}</div><small style="opacity:.8">لو سامع صدى: استخدم سماعة أو قلل صوت السماعة</small>`)};
   draw();call.tick=setInterval(()=>{if(call)draw()},1000);
 }
@@ -81,7 +106,7 @@ window.callStart=async function(peerUid){
   if(call)return msg("أنت في مكالمة بالفعل");
   if(!window.RTCPeerConnection||!navigator.mediaDevices)return msg("المتصفح لا يدعم المكالمات");
   call={id:uuid(),peer:peerUid,dir:"out"};
-  ui(`<div style="font-size:42px">📞</div><h2>${esc(nameOf(peerUid))}</h2><p>جاري الاتصال…</p>${btn("⛔ إلغاء","callEnd()","#b0352d")}`);
+  ui(`<div style="font-size:42px">📞</div><h2>${esc(nameOf(peerUid))}</h2><p>جاري الاتصال…</p>${btn("⛔ إلغاء","callEnd()","#b0352d")}`);tone("out");
   try{
     const pc=await mkPc(),off=await pc.createOffer({offerToReceiveAudio:true});
     await pc.setLocalDescription(off);
@@ -93,14 +118,14 @@ window.callStart=async function(peerUid){
 async function incoming(s){
   if(call){await sb("/rest/v1/call_signals",{method:"POST",body:{call_id:s.call_id,to_uid:s.from_uid,kind:"busy"}}).catch(()=>{});return}
   call={id:s.call_id,peer:s.from_uid,dir:"in",offer:s.payload};
-  try{navigator.vibrate&&navigator.vibrate([300,150,300,150,300])}catch(e){}
+  tone("in");
   ui(`<div style="font-size:42px">📞</div><h2>${esc(nameOf(s.from_uid))}</h2><p>مكالمة واردة…</p><div style="display:flex;gap:12px">${btn("✅ رد","callAccept()","#1b7a63")}${btn("⛔ رفض","callDecline()","#b0352d")}</div>`);
   call.t=setTimeout(()=>cleanup(false),45000);
   startPoll();
 }
-window.callDecline=()=>{if(!call)return;send("decline").catch(()=>{});cleanup(false)};
+window.callDecline=()=>{stopTone();if(!call)return;send("decline").catch(()=>{});cleanup(false)};
 window.callAccept=async()=>{
-  if(!call||!call.offer)return;clearTimeout(call.t);
+  if(!call||!call.offer)return;stopTone();clearTimeout(call.t);
   ui(`<div style="font-size:42px">📞</div><h2>${esc(nameOf(call.peer))}</h2><p>جاري التوصيل…</p>${btn("⛔ إنهاء","callEnd()","#b0352d")}`);
   try{
     const pc=await mkPc();
