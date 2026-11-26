@@ -12,7 +12,7 @@ const gmFind=id=>(cl.msgs||[]).find(m=>m.id+""===id+"");
 async function gmMeta(id){
   try{
     const ids=(cl.msgs||[]).map(m=>m.id);
-    const[r,x]=await Promise.all([sb("/rest/v1/group_reads?select=user_id,last_read_id&group_id=eq."+id),ids.length?sb("/rest/v1/group_msg_reactions?select=message_id,user_id,emoji&message_id=in.("+ids.join(",")+")"):[]]);
+    const[r,x]=await Promise.all([sb("/rest/v1/group_reads?select=user_id,last_read_id&chat_id=eq."+id),ids.length?sb("/rest/v1/group_msg_reactions?select=message_id,user_id,emoji&message_id=in.("+ids.join(",")+")"):[]]);
     cl.gmSeen={};(r||[]).forEach(o=>cl.gmSeen[o.user_id]=Number(o.last_read_id)||0);
     cl.gmRx={};(x||[]).forEach(o=>{(cl.gmRx[o.message_id]=cl.gmRx[o.message_id]||{})[o.user_id]=o.emoji});
   }catch(e){}
@@ -29,7 +29,7 @@ window.loadMsgs=async function(id){
   await _lm.apply(this,arguments);
   const sel="id,body,created_at,user_id,reply_to,kind,media_url,media_secs";
   try{const raw=await sb("/rest/v1/messages?group_id=eq."+encodeURIComponent(id)+"&select="+sel+"&order=id.desc&limit=50");const m={};(raw||[]).forEach(o=>m[o.id]=o);(cl.msgs||[]).forEach(o=>{if(m[o.id])Object.assign(o,m[o.id])})}catch(e){}
-  await gmMeta(id);gmMarkRead(id);
+  await gmMeta(id);
   const c=el("msgs");if(c&&curGroup()){const near=c.scrollHeight-c.scrollTop-c.clientHeight<80;c.innerHTML=msgHtml();if(near)c.scrollTop=c.scrollHeight}
 };
 window.msgHtml=function(){
