@@ -94,7 +94,7 @@ window.feedHome=function(){
   const me=cl.me||{name:cs().name},first=(me.name||cs().name||"").split(" ")[0];
   const unread=cl.nunread?'<i class="nbadge">'+(cl.nunread>99?"99+":an(cl.nunread))+'</i>':"";
   const top='<div class="fbtop"><b>يومك</b><button aria-label="بحث" onclick="openPage(\'search\')">🔎</button><button aria-label="الإشعارات" onclick="openPage(\'notif\')">🔔'+unread+'</button><button aria-label="الدردشة" onclick="go(\'chat\')">💬</button></div>';
-  const comp='<div class="card fbcomp"><div class="fh">'+avHtml({...me,id:cs().uid},40)+'<button class="cbtn" onclick="newPost()">بم تفكر يا '+esc(first)+'؟</button></div><div class="fbsep"></div><div class="fbacts"><button onclick="openReels()">🎬 ريلز</button><button onclick="fbPhoto()">🖼️ صورة</button><button onclick="newPost()">😊 شعور</button></div></div>';
+  const comp='<div class="card fbcomp"><div class="fh">'+avHtml({...me,id:cs().uid},40)+'<button class="cbtn" onclick="newPost()">بم تفكر يا '+esc(first)+'؟</button></div><div class="fbsep"></div><div class="fbacts"><button onclick="openReels()">🎬 ريلز</button><button onclick="fbPhoto()">🖼️ صورة</button><button onclick="openJobs()">💼 وظائف</button><button onclick="newPost()">😊 شعور</button></div></div>';
   const det='<details class="fbq"><summary>☀️ يومك واختصاراتك</summary>'+legacy.map(k=>k.outerHTML).join("")+'</details>';
   const flt='<details class="fbq"><summary>🔎 تصفية المنشورات</summary>'+chips.map(k=>k.outerHTML).join("")+'</details>';
   let out=top+comp+fbStories()+det+flt,n=0,did1=0,did2=0;
