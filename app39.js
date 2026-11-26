@@ -75,7 +75,7 @@ window.rlDel=async id=>{
   try{await sb("/rest/v1/reels?id=eq."+id,{method:"DELETE",prefer:"return=minimal"});rl.list=rl.list.filter(r=>r.id!==id);msg("تم الحذف");rlDraw(false)}catch(e){msg(sbErr(e).slice(0,80))}
 };
 window.rlComments=async id=>{
-  openModal('<button class="close" aria-label="إغلاق" onclick="closeModal()">×</button><h3>💬 التعليقات</h3><div class="rlcm" id="rlCm"><p class="muted">جارِ التحميل…</p></div><div class="row"><input id="rlIn" class="input" maxlength="500" placeholder="اكتب تعليق…" style="flex:1"><button class="primary" onclick="rlSend('+id+')">إرسال</button></div>');
+  openModal('<button class="close" aria-label="إغلاق" onclick="closeModal()">×</button><h3>💬 التعليقات</h3><div class="rlcm" id="rlCm"><p class="muted">جارِ التحميل…</p></div><div class="row"><input id="rlIn" class="input" maxlength="500" placeholder="اكتب تعليق…" style="flex:1"><button class="primary" style="flex:0 0 auto;width:auto;padding:0 18px" onclick="rlSend('+id+')">إرسال</button></div>');
   rlCmDraw(id);
 };
 async function rlCmDraw(id){
