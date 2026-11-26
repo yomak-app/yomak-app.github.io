@@ -116,7 +116,4 @@ async function pgSend(id){
   if(adm){uid=cl.pg.replyTo;if(!uid){const last=await sb("/rest/v1/page_messages?select=user_id&page_id=eq."+id+"&from_page=eq.false&order=created_at.desc&limit=1");uid=last&&last[0]&&last[0].user_id;if(!uid)return msg("مفيش عميل ترد عليه")}}
   try{await sb("/rest/v1/page_messages",{method:"POST",prefer:"return=minimal",body:{page_id:id,user_id:uid,from_page:!!adm,body:t}});el("pmB").value="";pgMsgs(id)}catch(e){msg(sbErr(e))}
 }
-function pgReport(kind,id){
-  formModal("إبلاغ للإدارة",selF("rReason","سبب البلاغ",REASONS,REASONS[0])+inp("rNote","تفاصيل (اختياري)","",{area:1,max:300,rows:2}),async()=>{
-    try{await sb("/rest/v1/reports",{method:"POST",prefer:"return=minimal",body:{reporter:pgMe(),kind,ref_id:String(id),target:kind+" #"+id,reason:val("rReason")+(val("rNote")?" - "+val("rNote"):"")}});closeModal();msg("وصل البلاغ للإدارة ✅")}catch(e){msg(sbErr(e))}return!1},{save:"إرسال"});
-}
+function pgReport(kind,id){reportItem(kind,id)}
