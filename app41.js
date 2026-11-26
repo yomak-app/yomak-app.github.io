@@ -96,3 +96,12 @@ window.jbNew=()=>{
   },{save:"نشر"});
 };
 (function(){const f=window.findItem;window.findItem=function(k,id){if(k==="job"){const x=jb.list.find(r=>String(r.id)===String(id));if(x)return{author:x.user_id,snap:x.title,ref:String(x.id)}}return f.apply(this,arguments)}})();
+/* Tapping a job notification opens that job. */
+(function(){const o=window.nOpen;window.nOpen=async function(id){
+  const n=(cl.nlist||[]).find(x=>x.id===id);
+  if(!n||(n.kind!=="job_app"&&n.kind!=="job_status"))return o.apply(this,arguments);
+  if(!n.read){n.read=true;try{nSetBadge(Math.max(0,cl.nunread-1));await sb("/rest/v1/notifications?id=eq."+id,{method:"PATCH",prefer:"return=minimal",body:{read:true}})}catch(e){}}
+  const jid=Number(n.ref_id);if(!jid)return openJobs();
+  jb.tab=n.kind==="job_app"?"mine":"applied";jb.q="";jb.type="";jb.city="";jb.list=[];openPage("jobs");
+  const t=setInterval(()=>{if(!jb.busy&&jb.list.some(x=>x.id===jid)){clearInterval(t);jbOpen(jid)}},300);setTimeout(()=>clearInterval(t),6000);
+}})();
