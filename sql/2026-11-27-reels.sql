@@ -54,3 +54,4 @@ create policy "reels insert own folder" on storage.objects for insert to authent
 create policy "reels read files" on storage.objects for select to anon, authenticated using (bucket_id = 'reels');
 create policy "reels delete own files" on storage.objects for delete to authenticated
   using (bucket_id = 'reels' and ((storage.foldername(name))[1] = auth.uid()::text or public.is_admin()));
+
