@@ -187,6 +187,7 @@ async function mkSave(e){
   if(title.length<2)return msg("اكتب عنوان للإعلان");
   if(!/^[0-9+]{7,16}$/.test(phone))return msg("اكتب رقم موبايل صحيح");
   const body={category:v("sCat"),subcategory:v("sSub")||null,title:title.slice(0,80),details:v("sDet").slice(0,1000)||null,price_num:pn===""?null:Number(pn),price:null,condition:v("sCond")||null,negotiable:!!el("sNeg").checked,city:v("sCity").slice(0,40),phone,whatsapp:!!el("sWa").checked,updated_at:new Date().toISOString()};
+  if(window.mkExtra){const ex=window.mkExtra();if(ex&&ex.error)return msg(ex.error);Object.assign(body,ex||{})}
   try{
     await ensureProfile();
     if(e){await sb("/rest/v1/market_listings?id=eq."+e.id,{method:"PATCH",prefer:"return=minimal",body});Object.assign(e,body)}
