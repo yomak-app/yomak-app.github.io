@@ -44,6 +44,7 @@ window.drawAd=function(e){
   tx(c,office||"عبر تطبيق يومك YOMAK",W/2,1285,44,T.id==="gold"||T.id==="dark"?"#000":"#fff",980,1);
   tx(c,"📍 "+(e.place||""),W/2,1326,28,T.id==="gold"||T.id==="dark"?"#000":"#fff",980,1,false);
   return cv};
+window.__adh={tx,rr,TPL,priceLabel,tpl};
 const oFields=window.agFields;
 window.agFields=function(){const f=oFields();f.office=(el("agOffice")?el("agOffice").value.trim():"")||(es&&es.office&&es.office.name)||"";return f};
 const oRender=PAGES.adgen.render;
