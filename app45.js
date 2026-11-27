@@ -26,6 +26,15 @@ window.gateMode=function(){
   const t=el("gate");if(!t)return;
   t.innerHTML='<div class="gbox"><div class="onbrand">يومك <small>YOMAK</small></div><h1>أهلًا بيك</h1><p class="muted">سجّل دخولك بحساب Pi وابدأ.</p>'+piBtn+'</div>';
 };
+
+/* Pi mode asks for no phone number, website or email in forms. */
+const HID=["sPhone","mPhone","jbPh","rgP","rqP","pgPhone","pgWeb","pgMail","sWa","mWa","rgW","jbCPh"];
+function hideFields(){
+  HID.forEach(id=>{const e=document.getElementById(id);if(!e||e.dataset.pihid)return;e.dataset.pihid=1;
+    const l=document.querySelector('label[for="'+id+'"]');if(l)l.style.display="none";
+    const p=e.closest("label.chkrow,label.chk,.chk");(p||e).style.display="none"});
+}
+new MutationObserver(hideFields).observe(document.documentElement,{childList:true,subtree:true});
 /* No navigation to outside sites from inside the app. */
 const wo=window.open;
 const EXT=/^(mailto|tel|sms|whatsapp|intent|fb|geo):/i;
