@@ -97,9 +97,9 @@
   window.svcSave=async function(){
     var name=val("rgN");if(name.length<2)return msg("اكتب اسمك");
     var ph=val("rgP"),n=ph?normPhone(ph,d.country==="SA"?"SA":"EG"):"";if(ph&&!n)return msg("رقم غير صحيح");
-    if(!n)return msg("اكتب رقم موبايل يتواصل عليه الناس");
+    if(!n&&!window.YOMAK_PI)return msg("اكتب رقم موبايل يتواصل عليه الناس");
     var pr=val("rgPr");
-    var body={name:name,category:el("rgC").value,title:val("rgT")||null,bio:val("rgB")||null,city:val("rgCity")||null,areas:val("rgA")||null,phone:n,whatsapp:!!el("rgW").checked,country:d.country==="SA"?"SA":"EG",price_from:pr?Number(pr):null,price_unit:val("rgU")||null};
+    var body={name:name,category:el("rgC").value,title:val("rgT")||null,bio:val("rgB")||null,city:val("rgCity")||null,areas:val("rgA")||null,phone:n||null,whatsapp:!!el("rgW").checked,country:d.country==="SA"?"SA":"EG",price_from:pr?Number(pr):null,price_unit:val("rgU")||null};
     try{
       if(S.mine)await sb("/rest/v1/service_providers?id=eq."+S.mine.id,{method:"PATCH",prefer:"return=minimal",body:body});
       else await sb("/rest/v1/service_providers",{method:"POST",prefer:"return=minimal",body:body});
