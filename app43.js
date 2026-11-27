@@ -32,3 +32,5 @@ window.pgSend=function(id){
 };
 })();
 (function(){const s=document.createElement("style");s.textContent="#pmB+.pact{white-space:nowrap;min-width:72px}";document.head.append(s)})();
+/* Phones: stop the browser's own text-selection/callout from fighting the long-press menu on message bubbles. */
+(function(){const s=document.createElement("style");s.textContent=".bub[data-mid]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}#rxpick,button[id^=lk-]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}";document.head.append(s)})();
