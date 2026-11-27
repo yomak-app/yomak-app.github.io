@@ -1,14 +1,18 @@
-/* Editions. Pi mode (Pi Browser or the yomak-pi site) follows the Pi Mainnet listing rules:
+/* Editions. Pi mode (yomak-pi site or ?edition=pi) follows the Pi Mainnet listing rules:
    Pi sign-in only, no redirects to external sites, no email/phone collection at sign-in.
    The public edition is untouched. */
 (function(){
-const UA=/PiBrowser/i.test(navigator.userAgent||"");
 const HOSTPI=/^yomak-pi\./i.test(location.hostname)||/[?&]edition=pi\b/.test(location.search);
-window.YOMAK_PI=UA||HOSTPI;
-if(!window.YOMAK_PI)return;
+window.YOMAK_PI=HOSTPI;
+if(!window.YOMAK_PI){
+  /* Public edition: no Pi sign-in button. */
+  const ob=window.oauthBtns;
+  window.oauthBtns=function(){return ob().replace(/<button[^>]*piLogin\(\)[^>]*>[^<]*<\/button>/,"").replace(/<button[^>]*Pi Network[^>]*>[^<]*<\/button>/,"")};
+  return;
+}
 document.documentElement.classList.add("pimode");
 const st=document.createElement("style");
-st.textContent='.pimode a[href*="wa.me"],.pimode a[href*="openstreetmap.org"],.pimode a[href*="facebook.com"],.pimode a[href^="http"]:not([href*="yomak"]):not([href^="blob"]){display:none!important}.pimode [data-ext]{display:none!important}';
+st.textContent='.pimode a[href^="mailto:"],.pimode a[href^="tel:"],.pimode a[href^="sms:"],.pimode a[href*="wa.me"],.pimode a[href*="openstreetmap.org"],.pimode a[href*="facebook.com"],.pimode a[href^="http"]:not([href*="yomak"]):not([href^="blob"]){display:none!important}.pimode [data-ext]{display:none!important}';
 document.head.appendChild(st);
 const piBtn='<div class="oauth"><button class="primary" type="button" onclick="piLogin()">🟣 الدخول بحساب Pi</button></div><p class="muted" style="margin:8px 2px">الدخول في نسخة Pi بحساب Pi فقط. مش بنطلب بريد ولا رقم موبايل.</p>';
 window.oauthBtns=()=>piBtn;
@@ -24,7 +28,9 @@ window.gateMode=function(){
 };
 /* No navigation to outside sites from inside the app. */
 const wo=window.open;
+const EXT=/^(mailto|tel|sms|whatsapp|intent|fb|geo):/i;
 window.open=function(u){
+  if(EXT.test(String(u))){if(window.msg)msg("الرابط ده خارج التطبيق وعشان كده متقفل في نسخة Pi");return null}
   try{const x=new URL(u,location.href);
     if(/^https?:$/.test(x.protocol)&&x.origin!==location.origin&&!/\.supabase\.co$/.test(x.hostname)){if(window.msg)msg("الرابط ده خارج التطبيق وعشان كده متقفل في نسخة Pi");return null}
   }catch(e){}
@@ -32,6 +38,7 @@ window.open=function(u){
 };
 document.addEventListener("click",e=>{
   const a=e.target.closest&&e.target.closest("a[href]");if(!a)return;
+  if(EXT.test(a.getAttribute("href")||"")){e.preventDefault();e.stopPropagation();if(window.msg)msg("الرابط ده خارج التطبيق وعشان كده متقفل في نسخة Pi");return}
   let x;try{x=new URL(a.href,location.href)}catch(_){return}
   if(/^https?:$/.test(x.protocol)&&x.origin!==location.origin&&!/\.supabase\.co$/.test(x.hostname)){e.preventDefault();e.stopPropagation();if(window.msg)msg("الرابط ده خارج التطبيق وعشان كده متقفل في نسخة Pi")}
 },true);
