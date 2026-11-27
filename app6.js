@@ -95,11 +95,22 @@ function watch(){
 window.addEventListener("online",()=>{if(call&&call.on)reconnect("online")});
 function connected(){
   if(!call||call.on)return;call.on=true;stopTone();keepAwake(true);clearTimeout(call.t);call.t0=Date.now();watch();
-  const draw=()=>{const s=Math.floor((Date.now()-call.t0)/1000);ui(`<div style="font-size:42px">🎙️</div><h2>${esc(nameOf(call.peer))}</h2><div id="callBadge" style="min-height:20px;font-size:13px;color:#ffd9a0"></div><div id="callT" style="font-size:22px">${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}</div><div style="display:flex;gap:12px">${btn(call.muted?"🔇 تشغيل":"🎙️ كتم","callMute()","#3b6b62")}${btn("⛔ إنهاء","callEnd()","#b0352d")}</div><small style="opacity:.8">لو سامع صدى: استخدم سماعة أو قلل صوت السماعة</small>`)};
+  const draw=()=>{const s=Math.floor((Date.now()-call.t0)/1000);ui(`<div style="font-size:42px">🎙️</div><h2>${esc(nameOf(call.peer))}</h2><div id="callBadge" style="min-height:20px;font-size:13px;color:#ffd9a0"></div><div id="callT" style="font-size:22px">${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}</div><div style="display:flex;gap:12px">${btn(call.muted?"🔇 تشغيل":"🎙️ كتم","callMute()","#3b6b62")}${btn("🔊 "+(call.spkLabel||"الصوت"),"callSpk()","#3b6b62")}${btn("⛔ إنهاء","callEnd()","#b0352d")}</div><small style="opacity:.8">لو سامع صدى: استخدم سماعة أو قلل صوت السماعة</small>`)};
   draw();call.tick=setInterval(()=>{if(call)draw()},1000);
 }
 window.callMute=()=>{if(!call||!call.stream)return;call.muted=!call.muted;call.stream.getAudioTracks().forEach(t=>t.enabled=!call.muted)};
-window.callEnd=()=>cleanup(true);
+window.callEnd=()=>cleanup(true);window.callSpk=async function(){
+  const a=document.getElementById("callAudio");
+  if(!a||typeof a.setSinkId!=="function"||!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices)return msg("متصفحك مش بيسمح باختيار السماعة. غيّرها من زراير الصوت في الموبايل أو من البلوتوث.");
+  try{
+    const ds=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==="audiooutput");
+    if(ds.length<2)return msg("مفيش غير مخرج صوت واحد متاح دلوقتي.");
+    const cur=ds.findIndex(d=>d.deviceId===(a.sinkId||"default")),n=ds[(cur+1)%ds.length];
+    await a.setSinkId(n.deviceId);
+    const lb=(n.label||"").trim()||("مخرج "+((cur+1)%ds.length+1));
+    if(call)call.spkLabel=lb.slice(0,14);msg("الصوت: "+lb);
+  }catch(e){msg("ماقدرتش أغير السماعة")}
+};
 window.callStart=async function(peerUid){
   if(!cs())return authModal("login");
   if(typeof banStop==="function"&&banStop())return;
