@@ -74,7 +74,7 @@ window.svcRepost=async function(id){
   const src=p.repost_of?(allFeedPosts().find(x=>x.id===p.repost_of)||p):p;
   const me=cs().uid;if(src.user_id===me)return msg("ده منشورك أصلًا");
   try{await ensureProfile();
-    const body={country:src.country||null,city:src.city||"",category:src.category,kind:src.kind||"offer",title:src.title||"",body:src.body||"",phone:src.phone||"",whatsapp:!!src.whatsapp,price:src.price||"",images:Array.isArray(src.images)?src.images:[],menu:Array.isArray(src.menu)?src.menu:[],repost_of:src.id,repost_from:src.user_id};
+    const body={country:src.country||null,city:src.city||"",category:src.category,kind:src.kind||"offer",title:src.title||"",body:src.body||"",phone:src.phone||"",whatsapp:!!src.whatsapp,price:src.price||"",poll:Array.isArray(src.poll)?src.poll:null,images:Array.isArray(src.images)?src.images:[],menu:Array.isArray(src.menu)?src.menu:[],repost_of:src.id,repost_from:src.user_id};
     if(src.video_url)body.video_url=src.video_url;if(src.region)body.region=src.region;
     await sb("/rest/v1/service_posts",{method:"POST",prefer:"return=minimal",body});
     fd.list=null;fd.ts=0;msg("اتشارك المنشور على صفحتك 🔁")}
