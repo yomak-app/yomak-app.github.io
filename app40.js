@@ -13,7 +13,7 @@ function reLeaflet(){
 }
 const reCss=document.createElement("style");
 reCss.textContent=".rebar{background:#fff;border:1px solid var(--line,#e3e8e6);border-radius:14px;padding:8px;margin:0 0 10px}.rebar .r{display:flex;gap:6px;align-items:center;overflow-x:auto;margin-bottom:6px;scrollbar-width:none}.rebar .r::-webkit-scrollbar{display:none}.rebar .r:last-child{margin-bottom:0}.rebar .lb{font-size:12px;color:var(--muted,#667);white-space:nowrap}.rebar input{width:76px;min-height:36px;padding:0 8px;border:1px solid var(--line,#ddd);border-radius:10px;font:inherit}"+
-".remap{height:calc(100dvh - 500px);min-height:280px;border-radius:14px;overflow:hidden;border:1px solid var(--line,#e3e8e6);position:relative;z-index:0}.remap .leaflet-container{height:100%;width:100%;font:inherit}"+
+".remap{height:calc(100dvh - 590px);min-height:280px;border-radius:14px;overflow:hidden;border:1px solid var(--line,#e3e8e6);position:relative;z-index:0}.remap .leaflet-container{height:100%;width:100%;font:inherit}"+
 ".rem{background:var(--g,#155b50);color:#fff;border-radius:14px;padding:3px 8px;font-weight:800;font-size:12px;white-space:nowrap;border:2px solid #fff;box-shadow:0 1px 5px #0006;transform:translate(-50%,-100%);position:absolute}.rem.sale{background:#2f5fa8}.rem.rent{background:#b0352d}.rem.sel{background:var(--gold,#e0a030);color:#222}"+
 ".remc{position:absolute;bottom:8px;left:8px;right:8px;z-index:500;background:#fff;border-radius:14px;box-shadow:0 2px 10px #0004;padding:8px;display:flex;gap:10px;align-items:center}.remc .mki{width:76px;height:76px;aspect-ratio:auto;border-radius:10px;flex:0 0 76px;font-size:30px}.remc .t{flex:1;min-width:0}.remc .t b{display:block;color:var(--g,#155b50)}.remc .t div{font-size:13px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}"+
 ".mkre{padding:2px 8px 0;font-size:12px;color:var(--muted,#667);display:flex;gap:6px;flex-wrap:wrap}.mkre b{background:#e8eeec;color:var(--g,#155b50);border-radius:8px;padding:0 6px}"+
@@ -64,7 +64,7 @@ const _mkClear=window.mkClear;
 window.mkClear=function(){mk.re={purpose:"",beds:"",amin:"",amax:"",view:"list"};return _mkClear.apply(this,arguments)};
 const _mkListHtml=window.mkListHtml;
 window.mkListHtml=function(){
-  if(mk.cat==="realestate"&&mk.re.view==="map"&&mk.list!==null)return'<div class="remap" id="reMap"><p class="muted" style="padding:14px">جارِ تحميل الخريطة…</p></div><p class="muted" id="reCnt" style="margin:6px 2px"></p>';
+  if(mk.cat==="realestate"&&mk.re.view==="map"&&mk.list!==null)return reSearchBar("main")+'<div class="remap" id="reMap"><p class="muted" style="padding:14px">جارِ تحميل الخريطة…</p></div><p class="muted" id="reCnt" style="margin:6px 2px"></p>';
   return _mkListHtml.apply(this,arguments);
 };
 const _mkRedrawList=window.mkRedrawList;
@@ -123,7 +123,7 @@ window.mkSell=function(x){
   blk.innerHTML='<div class="mkrow"><div><label class="lbl">الغرض</label><select id="sPur" class="input"><option value="sale"'+(e&&e.purpose==="sale"?" selected":"")+'>للبيع</option><option value="rent"'+(e&&e.purpose==="rent"?" selected":"")+'>للإيجار</option></select></div><div><label class="lbl">المساحة (م²)</label><input id="sArea" class="input" inputmode="numeric" value="'+esc(e&&e.area_m2!=null?String(Number(e.area_m2)):"")+'"></div></div>'+
    '<div class="mkrow"><div><label class="lbl">غرف النوم</label><input id="sBeds" class="input" inputmode="numeric" value="'+esc(e&&e.bedrooms!=null?String(e.bedrooms):"")+'"></div><div><label class="lbl">الحمامات</label><input id="sBath" class="input" inputmode="numeric" value="'+esc(e&&e.bathrooms!=null?String(e.bathrooms):"")+'"></div></div>'+
    '<label class="row" style="gap:8px;margin:4px 0"><input type="checkbox" id="sFurn"'+(e&&e.furnished?" checked":"")+'> مفروشة</label><label class="lbl">الحي / المنطقة</label><input id="sDist" class="input" maxlength="60" value="'+esc(e&&e.district||"")+'">'+
-   '<label class="lbl">📍 حدد الموقع على الخريطة (اضغط على مكان العقار)</label><div class="reloc" id="sMap" style="height:220px"></div><button type="button" class="chip" onclick="reMyLoc()">📍 موقعي الحالي</button><small class="muted" id="sMapT">'+(rePick?"تم تحديد الموقع":"لسه ما حددتش الموقع")+'</small>';
+   '<label class="lbl">📍 حدد الموقع على الخريطة (اضغط على مكان العقار)</label>'+reSearchBar("form")+'<div class="reloc" id="sMap" style="height:220px"></div><button type="button" class="chip" onclick="reMyLoc()">📍 موقعي الحالي</button><small class="muted" id="sMapT">'+(rePick?"تم تحديد الموقع":"لسه ما حددتش الموقع")+'</small>';
   sub.parentNode.insertBefore(blk,sub.nextSibling);reToggleForm();
 };
 const _mkSubFill=window.mkSubFill;
@@ -146,4 +146,17 @@ window.mkExtra=function(){
   const n=i=>{const v=mkNum((el(i)||{}).value||"");return v===""?null:Number(v)};
   const a=n("sArea");if(a===null||a<=0)return{error:"اكتب مساحة العقار بالمتر"};
   return{purpose:val("sPur")||"sale",area_m2:a,bedrooms:n("sBeds"),bathrooms:n("sBath"),furnished:!!el("sFurn").checked,district:val("sDist").slice(0,60)||null,lat:rePick?rePick[0]:null,lng:rePick?rePick[1]:null};
+};
+
+function reSearchBar(w){return'<div class="row" style="margin:6px 0"><input id="reQ_'+w+'" class="input" placeholder="ابحث عن حي أو عنوان" onkeydown="if(event.key===\'Enter\'){event.preventDefault();reSearchAddr(\''+w+'\')}"><button type="button" class="chip" style="white-space:nowrap" onclick="reSearchAddr(\''+w+'\')">🔎 بحث</button></div>'}
+window.reSearchAddr=async w=>{
+  const q=val("reQ_"+w);if(q.length<2)return msg("اكتب اسم الحي أو العنوان");
+  const t=el("reQ_"+w),cc=(typeof d!=="undefined"&&d.country==="EG")?"eg":"sa";
+  try{
+    const r=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ar&countrycodes="+cc+"&q="+encodeURIComponent(q+(d.city?" "+d.city:"")));
+    const j=await r.json();if(!j||!j[0]){const r2=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ar&countrycodes="+cc+"&q="+encodeURIComponent(q));const j2=await r2.json();if(!j2||!j2[0])return msg("ما لقيتش المكان ده. جرب اسم تاني.");j[0]=j2[0]}
+    const ll=[Number(j[0].lat),Number(j[0].lon)];
+    if(w==="main"){if(reMap)reMap.setView(ll,14)}
+    else if(window._reForm){window._reForm.mp.setView(ll,15);window._reForm.set({lat:ll[0],lng:ll[1]})}
+  }catch(e){msg("البحث عن العنوان مش شغال دلوقتي. جرب بعد شوية أو حدد على الخريطة.")}
 };
