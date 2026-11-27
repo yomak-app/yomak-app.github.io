@@ -72,7 +72,7 @@ async function jbApps(id){
     const b=el("jbApps");if(!b)return;jb.apps[id]=a.length;
     b.innerHTML='<h4>👥 المتقدمين ('+an(a.length)+')</h4>'+(a.length?a.map(x=>{const p=cl.pp[x.user_id]||{id:x.user_id,name:"مستخدم"},ph=(x.phone||"").replace(/[^\d+]/g,"");
       return '<div class="jbap"><div style="display:flex;gap:8px;align-items:center" onclick="closeModal();openPage(\'user\',{id:\''+x.user_id+'\'})">'+avHtml(p,32)+'<b>'+esc(p.name||"")+'</b><small>'+agoAr(x.created_at)+'</small></div>'+(x.experience?'<p style="margin:6px 0 0">'+esc(x.experience)+'</p>':"")+(x.message?'<p style="margin:6px 0 0;color:var(--muted,#667)">'+esc(x.message)+'</p>':"")+
-      '<div class="r"><span>'+esc(JB_ST[x.status]||"").replace("تم اختيارك مبدئيًا","مختار")+'</span>'+(ph?'<a href="tel:'+ph+'">📞 اتصال</a>':"")+'<button onclick="jbSet('+x.id+',\'shortlisted\','+id+')">✅ اختيار</button><button onclick="jbSet('+x.id+',\'rejected\','+id+')">✖ رفض</button></div></div>'}).join(""):'<p class="muted">لسه مفيش متقدمين</p>');
+      '<div class="r"><span>'+esc(JB_ST[x.status]||"").replace("تم اختيارك مبدئيًا","مختار")+'</span>'+(ph?'<a href="tel:'+ph+'">📞 اتصال</a>':"")+(x.cv_path?'<button onclick="jbCv(\''+x.cv_path+'\')">📄 السيرة الذاتية</button>':"")+'<button onclick="jbSet('+x.id+',\'shortlisted\','+id+')">✅ اختيار</button><button onclick="jbSet('+x.id+',\'rejected\','+id+')">✖ رفض</button></div></div>'}).join(""):'<p class="muted">لسه مفيش متقدمين</p>');
   }catch(e){const b=el("jbApps");if(b)b.innerHTML='<p class="muted">'+esc(sbErr(e))+'</p>'}
 }
 window.jbSet=async(aid,s,jid)=>{try{await sb("/rest/v1/job_applications?id=eq."+aid,{method:"PATCH",prefer:"return=minimal",body:{status:s}});jbApps(jid)}catch(e){msg(sbErr(e).slice(0,80))}};
@@ -80,9 +80,9 @@ window.jbToggle=async id=>{const x=jb.list.find(j=>j.id===id),s=x.status==="open
 window.jbDel=async id=>{if(!confirm("حذف الوظيفة وكل التقديمات عليها؟"))return;try{await sb("/rest/v1/job_posts?id=eq."+id,{method:"DELETE",prefer:"return=minimal"});jb.list=jb.list.filter(j=>j.id!==id);closeModal();msg("تم الحذف");jbDraw()}catch(e){msg(sbErr(e).slice(0,80))}};
 window.jbApply=id=>{
   if(!cs())return authModal("signup");if(banStop())return;
-  formModal("قدّم على الوظيفة",inp("jbPh","رقم موبايل للتواصل","",{type:"tel",max:24,mode:"tel"})+inp("jbEx","خبرتك باختصار","",{area:1,max:1000,rows:3})+inp("jbMs","رسالة لصاحب الوظيفة (اختياري)","",{area:1,max:1000,rows:2}),()=>{
+  formModal("قدّم على الوظيفة",inp("jbPh","رقم موبايل للتواصل","",{type:"tel",max:24,mode:"tel"})+inp("jbEx","خبرتك باختصار","",{area:1,max:1000,rows:3})+inp("jbMs","رسالة لصاحب الوظيفة (اختياري)","",{area:1,max:1000,rows:2})+'<label class="lbl" for="jbCv">السيرة الذاتية (اختياري، PDF أو Word، حتى 2 ميجا)</label><input id="jbCv" class="input" type="file" accept=".pdf,.doc,.docx,application/pdf">',()=>{
     if(!val("jbPh"))return msg("اكتب رقم موبايل"),!1;
-    (async()=>{try{await ensureProfile();await sb("/rest/v1/job_applications",{method:"POST",prefer:"return=minimal",body:{job_id:id,phone:val("jbPh").slice(0,24),experience:val("jbEx").slice(0,1000)||null,message:val("jbMs").slice(0,1000)||null}});jb.mine[id]="new";msg("تم إرسال طلبك ✅");jbDraw()}catch(e){msg(/duplicate|23505/.test(String(e.message||e))?"قدمت قبل كده":sbErr(e).slice(0,80))}})();
+    (async()=>{try{await ensureProfile();const cvf=el("jbCv")&&el("jbCv").files[0];let cvp=null;if(cvf){if(cvf.size>2097152)return msg("الملف أكبر من 2 ميجا");const ex=(cvf.name.split(".").pop()||"pdf").toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,5);cvp=cs().uid+"/"+Date.now().toString(36)+"."+ex;const u=await fetch(SB_URL+"/storage/v1/object/cvs/"+cvp,{method:"POST",headers:{apikey:SB_KEY,Authorization:"Bearer "+cs().access,"Content-Type":cvf.type||"application/pdf"},body:cvf});if(!u.ok)return msg("رفع السيرة الذاتية فشل")}await sb("/rest/v1/job_applications",{method:"POST",prefer:"return=minimal",body:{cv_path:cvp,job_id:id,phone:val("jbPh").slice(0,24),experience:val("jbEx").slice(0,1000)||null,message:val("jbMs").slice(0,1000)||null}});jb.mine[id]="new";msg("تم إرسال طلبك ✅");jbDraw()}catch(e){msg(/duplicate|23505/.test(String(e.message||e))?"قدمت قبل كده":sbErr(e).slice(0,80))}})();
   },{save:"إرسال الطلب"});
 };
 window.jbNew=()=>{
@@ -105,3 +105,5 @@ window.jbNew=()=>{
   jb.tab=n.kind==="job_app"?"mine":"applied";jb.q="";jb.type="";jb.city="";jb.list=[];openPage("jobs");
   const t=setInterval(()=>{if(!jb.busy&&jb.list.some(x=>x.id===jid)){clearInterval(t);jbOpen(jid)}},300);setTimeout(()=>clearInterval(t),6000);
 }})();
+
+window.jbCv=async p=>{try{const r=await fetch(SB_URL+"/storage/v1/object/sign/cvs/"+p,{method:"POST",headers:{apikey:SB_KEY,Authorization:"Bearer "+cs().access,"Content-Type":"application/json"},body:JSON.stringify({expiresIn:300})});const j=await r.json();if(!j.signedURL)throw 0;window.open(SB_URL+"/storage/v1"+j.signedURL,"_blank")}catch(e){msg("مقدرتش أفتح الملف")}};

@@ -49,7 +49,7 @@ function mkFiltered(){
     if(mk.fav&&!mk.favs[x.id])return false;
     if(mk.cat&&mkCatOf(x)!==mk.cat)return false;
     if(mk.sub&&mkSubOf(x)!==mk.sub)return false;
-    if(q&&!norm((x.title||"")+" "+(x.details||"")+" "+mkSubOf(x)+" "+(x.city||"")).includes(q))return false;
+    if(q&&!norm((x.title||"")+" "+(x.details||"")+" "+mkSubOf(x)+" "+(x.city||"")+" "+(x.district||"")).includes(q))return false;
     if(mk.city&&!norm(x.city||"").includes(norm(mk.city)))return false;
     if(mk.cond&&x.condition!==mk.cond)return false;
     if(mk.date&&now-new Date(x.created_at).getTime()>Number(mk.date)*864e5)return false;
