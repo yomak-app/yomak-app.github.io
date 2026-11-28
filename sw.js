@@ -1,6 +1,6 @@
-const V='yomak-v21',FILES=['./','./index.html','./manifest.json','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png'];
+const V='yomak-v22',FILES=['./','./index.html','./manifest.json','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>{const old=k.some(x=>x!==V);return Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x))).then(()=>self.clients.claim()).then(()=>old?self.clients.matchAll({type:'window'}):[]).then(l=>l.forEach(c=>{try{c.navigate(c.url)}catch(x){}}))}))});
 // الشبكة أولًا (علشان التحديثات تظهر فورًا)، وعند عدم وجود نت يُقدَّم المحفوظ
 // الصفحة الرئيسية: الشبكة أولًا. ملفات التطبيق (js/صور): من الذاكرة فورًا ثم تحديث في الخلفية، ولو الملف اتغير الصفحة تتحدّث مرة واحدة.
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==location.origin)return;
